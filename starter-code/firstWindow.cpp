@@ -1,6 +1,8 @@
 #include "GL/freeglut.h"
 #include "GL/gl.h"
 
+/* compile with "g++ firstWindow.cpp -lglut -lGL" */
+
 /* display function - code from:
      http://fly.cc.fer.hr/~unreal/theredbook/chapter01.html
 This is the actual usage of the OpenGL library. 
