@@ -1,3 +1,10 @@
+/* view.cpp
+ * --------
+ *
+ * Compile & run with "g++ view.cpp -lglut -lGL -o view && ./view"
+ */
+
+
 #include <GL/freeglut.h>
 #include <GL/gl.h>
 #include <stdio.h>
@@ -33,10 +40,7 @@ void updateTransform(Transform *transform) {
 Transform *modelState = makeTransform(0, 0, .01, .01);
 
 
-/* display function - code from:
-     http://fly.cc.fer.hr/~unreal/theredbook/chapter01.html
-This is the actual usage of the OpenGL library. 
-The following code is the same for any platform */
+
 void render(float fractionOfUpdate)
 {
     glClearColor(0.0, 0.0, 0.0, 0.0);
