@@ -1,7 +1,7 @@
 /*
  * GL07BouncingBall.cpp: A ball bouncing inside the window
  */
-// #include <windows.h>  // for MS Windows
+ //TO COMPILE: g++ bouncyball.cpp -lglut -lGLU -lGL -o bouncyball
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 #include <math.h>     // Needed for sin, cos
 #include <GL/glu.h>
