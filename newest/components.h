@@ -35,4 +35,13 @@ class Component {
   	const GameObject* parent;
 };
 
+class CircleRender : public Component {
+  private:
+    double radius;
+
+  public:
+    CircleRender( GameObject* parent, double radius);
+    void update( float dt );
+};
+
 #endif
