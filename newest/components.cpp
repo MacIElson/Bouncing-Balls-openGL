@@ -43,7 +43,7 @@ Component::Component( GameObject* parent, string type ) : parent ( parent ), typ
 }; // Similar as an init method: In this case, initilizes the type and parent fields, and adds self to the static components list.
 
 void Component::update( float dt ) {} //will be overrided in a subclass, so we don't need to specify it 
-void Component::fixedUpdate( float dt ) {usleep(17000);}
+void Component::fixedUpdate( float dt ) {}
 
 void Component::updateAll( float dt ){
   for(Component* elem: Component::components){
