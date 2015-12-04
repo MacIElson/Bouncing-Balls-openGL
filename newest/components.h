@@ -35,4 +35,19 @@ class Component {
   	const GameObject* parent;
 };
 
+class Collider; //Forward declaration, alerts the compiler that collider is coming
+typedef void ( * triggerFunc ) ( Collider* c); //New type called triggerFunc, takes a Collider pointer returns void
+
+class Collider : public Component{
+  private:
+    double radius;
+    static list<Collider*> colliders;
+    list<triggerFunc> triggers;
+
+  public:
+    void addTrigger(triggerFunc);
+    Collider( GameObject* parent, double radius);
+    void fixedUpdate ( float dt );
+};
+
 #endif
