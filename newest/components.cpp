@@ -16,8 +16,6 @@ using namespace std;
 
 ODLGameLoopState odlGameLoopState;
 
-string someString("This is a string.");
-
 // GameObject Implementation
 GameObject::GameObject( double x, double y ) : x( x ), y( y ) {}
 
@@ -74,7 +72,6 @@ void ODLGameLoop_updateMeasurements() {
     double fps = (odlGameLoopState.fpsCount*1000)/timeElapsedMs;
     char title[100];
     printf("C Game Loop Study - On Demand Game Loop. FPS:%d UPS:%d \n", (int) fps, (int)ups);
-    //glutSetWindowTitle(someString);
     odlGameLoopState.upsCount = 0;
     odlGameLoopState.fpsCount = 0;
     odlGameLoopState.lastMeasurementTime = now;
@@ -115,7 +112,6 @@ void ODLGameLoop_onOpenGLIdle() {
   //printf("timeElapsed: %d timeAccumulatedMs: %d DESIRED_STATE_UPDATE_DURATION_MS: %d \n", (int)timeElapsedMs, (int)odlGameLoopState.timeAccumulatedMs, DESIRED_STATE_UPDATE_DURATION_MS);
   
   while(odlGameLoopState.timeAccumulatedMs >= DESIRED_STATE_UPDATE_DURATION_MS) { //
-      //printf("%s\n",someString.c_str());
 
       Component::fixedUpdateAll(timeElapsedMs);
       //ODLGameLoop_updateState();
@@ -127,8 +123,7 @@ void ODLGameLoop_onOpenGLIdle() {
       glutPostRedisplay();
       
   }
-  //glutPostRedisplay();
-  //printf("%s\n",someString.c_str());
+  
   odlGameLoopState.lastLoopTime = now;  
 }
 
