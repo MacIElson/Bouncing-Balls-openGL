@@ -58,6 +58,37 @@ void Component::fixedUpdateAll( float dt ){
 }; // Updates on fixed interval (eg physicsUpdateAll)
 
 /**
+ * Begin code to handle CircleRender
+ */ 
+
+CircleRender::CircleRender( GameObject* parent, double radius ) : radius ( radius ), Component(parent, string("CircleRender")) {}
+
+void CircleRender::update( float dt ) {
+  GLfloat ballRadius = (GLfloat) radius;   // Radius of the bouncing ball
+  GLfloat ballX = (GLfloat) parent->x;         // Ball's center (x, y) position
+  GLfloat ballY = (GLfloat) parent->y;
+
+  glMatrixMode(GL_MODELVIEW);    // To operate on the model-view matrix
+  glLoadIdentity();              // Reset model-view matrix
+  
+  glTranslatef(ballX, ballY, 0.0f);  // Translate to (xPos, yPos)
+  // Use triangular segments to form a circle
+  glBegin(GL_TRIANGLE_FAN);
+     glColor3f(0.0f, 0.0f, 1.0f);  // Blue
+     glVertex2f(0.0f, 0.0f);       // Center of circle
+     int numSegments = 100;
+     GLfloat angle;
+     for (int i = 0; i <= numSegments; i++) { // Last vertex same as first vertex
+        angle = (i * 2.0f * PI) / numSegments;  // 360 deg for all segments
+        glVertex2f(cos(angle) * ballRadius, sin(angle) * ballRadius);
+     }
+  glEnd();
+}
+
+
+
+
+/**
  * Begin code to handle game loop
  */ 
 
@@ -172,7 +203,7 @@ void ODLGameLoop_initOpenGL() {
 // Testing
 int main() {
 
-  GameObject obj ( 1, 1 );
+  GameObject obj ( .5, .5);
   if (obj.getComponent( "physics" ).empty()) printf( "Test Passed\n" );
   else printf ( "Test Failed" );
 
@@ -180,6 +211,8 @@ int main() {
   Component comp ( &obj, "physics" );
   if (obj.getComponent( "physics" ).front() == &comp) printf( "Test Passed\n" );
   else printf ( "Test Failed" );
+
+  CircleRender circleRender( &obj, .5 );
 
   ODLGameLoop_initOpenGL();
 
