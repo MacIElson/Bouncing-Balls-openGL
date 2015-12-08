@@ -62,7 +62,8 @@ void Component::fixedUpdateAll( float dt ){
  * Begin code to handle CircleRender
  */ 
 
-CircleRender::CircleRender( GameObject* parent, double radius ) : radius ( radius ), Component(parent, string("CircleRender")) {}
+CircleRender::CircleRender( GameObject* parent, double radius ) :
+radius ( radius ), Component(parent, string("CircleRender")) {}
 
 void CircleRender::update( float dt ) {
   //printf("floatingUpdatedt:%f \n", dt);
@@ -87,7 +88,18 @@ void CircleRender::update( float dt ) {
   glEnd();
 }
 
+/**
+ * Physics Component
+ */
 
+Physics::Physics ( GameObject* parent, double dx, double dy, double mass) :
+mass ( mass ), dx ( dx ), dy ( dy ), Component (parent, string("Physics")) {};
+
+void Physics::fixedUpdate( float dt ) {
+  parent->x += dx * dt;
+  parent->y += dy * dt;
+  // printf("%f, %f", parent->x, parent->y);
+};
 
 
 /**
@@ -220,6 +232,7 @@ int main() {
   else printf ( "Test Failed" );
 
   CircleRender circleRender( &obj, .5 );
+  Physics physics(&obj, -.005, -.005);
 
   ODLGameLoop_initOpenGL();
 
