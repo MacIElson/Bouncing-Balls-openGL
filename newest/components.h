@@ -40,17 +40,23 @@ class CircleRender : public Component {
     double radius;
 
   public:
-    CircleRender( GameObject* parent, double radius);
+    CircleRender( GameObject* parent, double radius );
     void update( float dt );
 };
 
 class Physics : public Component {
   public:
-    Physics ( GameObject* parent, double dx = 0, double dy = 0, double mass = 1);
+    Physics ( GameObject* parent, double dx = 0, double dy = 0, double mass = 1 );
     void fixedUpdate( float dt );
     double dx;
     double dy;
     double mass;
+};
+
+class WallBounceScript : public Component {
+  public:
+    WallBounceScript( GameObject* parent );
+    void fixedUpdate( float dt );
 };
 
 #endif
