@@ -52,6 +52,7 @@ void Component::updateAll( float dt ){
 };  // Run all variable updates (eg renderAll) 
 
 void Component::fixedUpdateAll( float dt ){
+ //printf("fixedUpdatedt:%f \n", (float) dt);
  for(Component* elem: Component::components){
     elem->fixedUpdate( dt );
   }
@@ -64,6 +65,7 @@ void Component::fixedUpdateAll( float dt ){
 CircleRender::CircleRender( GameObject* parent, double radius ) : radius ( radius ), Component(parent, string("CircleRender")) {}
 
 void CircleRender::update( float dt ) {
+  //printf("floatingUpdatedt:%f \n", dt);
   GLfloat ballRadius = (GLfloat) radius;   // Radius of the bouncing ball
   GLfloat ballX = (GLfloat) parent->x;         // Ball's center (x, y) position
   GLfloat ballY = (GLfloat) parent->y;
@@ -102,7 +104,7 @@ void ODLGameLoop_updateMeasurements() {
     double ups = (odlGameLoopState.upsCount*1000)/timeElapsedMs;
     double fps = (odlGameLoopState.fpsCount*1000)/timeElapsedMs;
     char title[100];
-    printf("C Game Loop Study - On Demand Game Loop. FPS:%d UPS:%d \n", (int) fps, (int)ups);
+    printf("On Demand Game Loop. FPS:%d UPS:%d \n", (int) fps, (int)ups);
     odlGameLoopState.upsCount = 0;
     odlGameLoopState.fpsCount = 0;
     odlGameLoopState.lastMeasurementTime = now;
@@ -128,7 +130,11 @@ void ODLGameLoop_initGameLoopState() {
 void ODLGameLoop_onOpenGLDisplay() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Screen
-  Component::updateAll(0);
+  double now = glutGet(GLUT_ELAPSED_TIME);
+  double dt = odlGameLoopState.lastLoopTime - now;
+  // printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
+  
+  Component::updateAll(dt);
   odlGameLoopState.fpsCount++;
   glutSwapBuffers();
 }
@@ -137,14 +143,15 @@ void ODLGameLoop_onOpenGLIdle() {
 
   double now = glutGet(GLUT_ELAPSED_TIME);
   double timeElapsedMs = ((now-odlGameLoopState.lastLoopTime)*1000000)/(CLOCKS_PER_SEC);
+  
 
   odlGameLoopState.timeAccumulatedMs += timeElapsedMs;
 
-  //printf("timeElapsed: %d timeAccumulatedMs: %d DESIRED_STATE_UPDATE_DURATION_MS: %d \n", (int)timeElapsedMs, (int)odlGameLoopState.timeAccumulatedMs, DESIRED_STATE_UPDATE_DURATION_MS);
-  
   while(odlGameLoopState.timeAccumulatedMs >= DESIRED_STATE_UPDATE_DURATION_MS) { //
+  	  //printf("dt:%f \n", odlGameLoopState.timeAccumulatedMs);
 
-      Component::fixedUpdateAll(timeElapsedMs);
+
+      Component::fixedUpdateAll( (float) odlGameLoopState.timeAccumulatedMs);
       //ODLGameLoop_updateState();
       odlGameLoopState.timeAccumulatedMs -= DESIRED_STATE_UPDATE_DURATION_MS;
   
