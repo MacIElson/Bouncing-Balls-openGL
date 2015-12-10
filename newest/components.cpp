@@ -46,12 +46,14 @@ void Component::update( float dt ) {} //will be overrided in a subclass, so we d
 void Component::fixedUpdate( float dt ) {}
 
 void Component::updateAll( float dt ){
+  //printf("floatingUpdatedt:%f \n", (float) dt);
   for(Component* elem: Component::components){
     elem->update( dt );
   }
 };  // Run all variable updates (eg renderAll) 
 
 void Component::fixedUpdateAll( float dt ){
+ //printf("fixedUpdatedt:%f \n", (float) dt);
  for(Component* elem: Component::components){
     elem->fixedUpdate( dt );
   }
@@ -111,6 +113,50 @@ ask parent object for list of colliders,
 */
 
 /**
+ * Begin code to handle CircleRender
+ */ 
+
+CircleRender::CircleRender( GameObject* parent, double radius ) :
+radius ( radius ), Component(parent, string("CircleRender")) {}
+
+void CircleRender::update( float dt ) {
+  //printf("floatingUpdatedt:%f \n", dt);
+  GLfloat ballRadius = (GLfloat) radius;   // Radius of the bouncing ball
+  GLfloat ballX = (GLfloat) parent->x;         // Ball's center (x, y) position
+  GLfloat ballY = (GLfloat) parent->y;
+
+  glMatrixMode(GL_MODELVIEW);    // To operate on the model-view matrix
+  glLoadIdentity();              // Reset model-view matrix
+  
+  glTranslatef(ballX, ballY, 0.0f);  // Translate to (xPos, yPos)
+  // Use triangular segments to form a circle
+  glBegin(GL_TRIANGLE_FAN);
+     glColor3f(0.0f, 0.0f, 1.0f);  // Blue
+     glVertex2f(0.0f, 0.0f);       // Center of circle
+     int numSegments = 100;
+     GLfloat angle;
+     for (int i = 0; i <= numSegments; i++) { // Last vertex same as first vertex
+        angle = (i * 2.0f * PI) / numSegments;  // 360 deg for all segments
+        glVertex2f(cos(angle) * ballRadius, sin(angle) * ballRadius);
+     }
+  glEnd();
+}
+
+/**
+ * Physics Component
+ */
+
+Physics::Physics ( GameObject* parent, double dx, double dy, double mass) :
+mass ( mass ), dx ( dx ), dy ( dy ), Component (parent, string("Physics")) {};
+
+void Physics::fixedUpdate( float dt ) {
+  parent->x += dx * dt;
+  parent->y += dy * dt;
+  // printf("%f, %f", parent->x, parent->y);
+};
+
+
+/**
  * Begin code to handle game loop
  */ 
 
@@ -124,7 +170,7 @@ void ODLGameLoop_updateMeasurements() {
     double ups = (odlGameLoopState.upsCount*1000)/timeElapsedMs;
     double fps = (odlGameLoopState.fpsCount*1000)/timeElapsedMs;
     char title[100];
-    printf("C Game Loop Study - On Demand Game Loop. FPS:%d UPS:%d \n", (int) fps, (int)ups);
+    printf("On Demand Game Loop. FPS:%d UPS:%d \n", (int) fps, (int)ups);
     odlGameLoopState.upsCount = 0;
     odlGameLoopState.fpsCount = 0;
     odlGameLoopState.lastMeasurementTime = now;
@@ -150,7 +196,11 @@ void ODLGameLoop_initGameLoopState() {
 void ODLGameLoop_onOpenGLDisplay() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Screen
-  Component::updateAll(0);
+  double now = glutGet(GLUT_ELAPSED_TIME);
+  double dt = now - odlGameLoopState.lastLoopTime;
+  //printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
+  
+  Component::updateAll(dt);
   odlGameLoopState.fpsCount++;
   glutSwapBuffers();
 }
@@ -159,14 +209,15 @@ void ODLGameLoop_onOpenGLIdle() {
 
   double now = glutGet(GLUT_ELAPSED_TIME);
   double timeElapsedMs = ((now-odlGameLoopState.lastLoopTime)*1000000)/(CLOCKS_PER_SEC);
+  
 
   odlGameLoopState.timeAccumulatedMs += timeElapsedMs;
 
-  //printf("timeElapsed: %d timeAccumulatedMs: %d DESIRED_STATE_UPDATE_DURATION_MS: %d \n", (int)timeElapsedMs, (int)odlGameLoopState.timeAccumulatedMs, DESIRED_STATE_UPDATE_DURATION_MS);
-  
   while(odlGameLoopState.timeAccumulatedMs >= DESIRED_STATE_UPDATE_DURATION_MS) { //
+  	  //printf("dt:%f \n", odlGameLoopState.timeAccumulatedMs);
 
-      Component::fixedUpdateAll(timeElapsedMs);
+
+      Component::fixedUpdateAll( (float) odlGameLoopState.timeAccumulatedMs);
       //ODLGameLoop_updateState();
       odlGameLoopState.timeAccumulatedMs -= DESIRED_STATE_UPDATE_DURATION_MS;
   
@@ -225,7 +276,7 @@ void ODLGameLoop_initOpenGL() {
 // Testing
 int main() {
 
-  GameObject obj ( 1, 1 );
+  GameObject obj ( .5, .5);
   if (obj.getComponent( "physics" ).empty()) printf( "Test Passed\n" );
   else printf ( "Test Failed" );
 
@@ -233,6 +284,9 @@ int main() {
   Component comp ( &obj, "physics" );
   if (obj.getComponent( "physics" ).front() == &comp) printf( "Test Passed\n" );
   else printf ( "Test Failed" );
+
+  CircleRender circleRender( &obj, .5 );
+  Physics physics(&obj, -.005, -.005);
 
   ODLGameLoop_initOpenGL();
 

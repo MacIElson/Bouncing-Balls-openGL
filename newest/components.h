@@ -32,7 +32,25 @@ class Component {
   	virtual void update( float dt );
   	virtual void fixedUpdate( float dt );
   	const string type;
-  	const GameObject* parent;
+  	GameObject* const parent; // Declare the pointer constant without making the data constant
+};
+
+class CircleRender : public Component {
+  private:
+    double radius;
+
+  public:
+    CircleRender( GameObject* parent, double radius);
+    void update( float dt );
+};
+
+class Physics : public Component {
+  public:
+    Physics ( GameObject* parent, double dx = 0, double dy = 0, double mass = 1);
+    void fixedUpdate( float dt );
+    double dx;
+    double dy;
+    double mass;
 };
 
 class Collider; //Forward declaration, alerts the compiler that collider is coming
