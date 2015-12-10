@@ -36,11 +36,9 @@ class Component {
 };
 
 class CircleRender : public Component {
-  private:
-    double radius;
-
   public:
     CircleRender( GameObject* parent, double radius );
+    double radius;
     void update( float dt );
 };
 
