@@ -46,7 +46,7 @@ void Component::update( float dt ) {} //will be overrided in a subclass, so we d
 void Component::fixedUpdate( float dt ) {}
 
 void Component::updateAll( float dt ){
-  printf("floatingUpdatedt:%f \n", (float) dt);
+  //printf("floatingUpdatedt:%f \n", (float) dt);
   for(Component* elem: Component::components){
     elem->update( dt );
   }
@@ -145,7 +145,7 @@ void ODLGameLoop_onOpenGLDisplay() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Screen
   double now = glutGet(GLUT_ELAPSED_TIME);
   double dt = now - odlGameLoopState.lastLoopTime;
-  printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
+  //printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
   
   Component::updateAll(dt);
   odlGameLoopState.fpsCount++;
