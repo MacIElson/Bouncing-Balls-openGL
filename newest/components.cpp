@@ -85,20 +85,31 @@ Collider::Collider( GameObject* parent, double radius ) :
 
 //addTrigger add trigger function to a list of functions
 
-void Collider::addTrigger(triggerFunc* trigger){
-    triggers.push_back(trigger);
-  }
+void Collider::addTrigger(triggerFunc trigger) {
+  triggers.push_back(trigger);
+}
 
-  Collider::fixedUpdate(float dt){
-    list <Component*> parentList = parent.getComponent("Collider");
-    for(Collider* otherCollider: Collider::allColliders) {
-      for(Component* parentCollider: parentList){
-         if ((otherCollider) != parentCollider) 
-            if sqrt((otherCollider.parent->x - parent->x)^2 + (otherCollider.parent->y - parent->y)^2) < (otherCollider->radius + parentCollider->radius))
-              for (triggerFunc trigger: triggers){triggerFunc((*Collider) parentCollider,otherCollider)}
-        } 
-    }
+void Collider::fixedUpdate(float dt) {
+  list <Component*> parentList =  parent->getComponent("Collider");
+  Collider* parentCollider;
+  for(Collider* otherCollider: Collider::allColliders) {
+    for(Component* elem: parentList) {
+      parentCollider = (Collider*) elem;
+      if ((otherCollider) != parentCollider) {
+       if (
+          sqrt(
+            pow((otherCollider->parent->x - parent->x),2) +
+            pow((otherCollider->parent->y - parent->y),2)
+          ) < 
+            (otherCollider->radius + parentCollider->radius)
+        ) for (triggerFunc trigger: triggers) {
+          trigger(parentCollider,otherCollider);
+        }
+      }
+    } 
   }
+}
+
 /*fixedUpdate iterate through collider list
 check to to see that it's not this collider (don't collide w/self)
 ask parent object for list of colliders, 
@@ -274,6 +285,11 @@ void ODLGameLoop_initOpenGL() {
  */ 
 
 // Testing
+
+void printOnCollide(Collider* c1, Collider* c2){
+  printf("collide");
+}
+
 int main() {
 
   GameObject obj ( .5, .5);
@@ -286,7 +302,13 @@ int main() {
   else printf ( "Test Failed" );
 
   CircleRender circleRender( &obj, .5 );
-  Physics physics(&obj, -.005, -.005);
+  Physics physics(&obj, -.0005, -.0005);
+  Collider collider(&obj, .5);
+  collider.addTrigger(printOnCollide);
+
+  GameObject obj2 (-1, -1);
+  Collider collider2(&obj2, .5);
+  CircleRender circleRender2( &obj2, .5);
 
   ODLGameLoop_initOpenGL();
 
