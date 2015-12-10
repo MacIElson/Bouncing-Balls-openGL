@@ -107,8 +107,8 @@ void Physics::fixedUpdate( float dt ) {
  * Begin code to handle wall collisions
  */
 
-WallBounceScript::WallBounceScript( GameObject* parent ) :
-Component (parent, string( "WallBounceScript" )) {};
+WallBounceScript::WallBounceScript( GameObject* parent, double radius ) :
+radius ( radius ), Component (parent, string( "WallBounceScript" )) {};
 
 void WallBounceScript::fixedUpdate( float dt ) {
   double x = parent->x;
@@ -116,8 +116,6 @@ void WallBounceScript::fixedUpdate( float dt ) {
   Physics* physComp = dynamic_cast<Physics*> (parent->getComponent(string("Physics")).front());
   double dx = physComp->dx;
   double dy = physComp->dy;
-  CircleRender* rendComp = dynamic_cast<CircleRender*> (parent->getComponent(string("CircleRender")).front());
-  double radius = rendComp->radius;
 
   if (x+radius >= 1) {
     dx = -1 * fabs(dx);
@@ -268,7 +266,7 @@ int main() {
 
   CircleRender circleRender( &obj, .2 );
   Physics physics(&obj, -.0005, -.001);
-  WallBounceScript wallBounceScript(&obj);
+  WallBounceScript wallBounceScript(&obj, .2);
 
   ODLGameLoop_initOpenGL();
 

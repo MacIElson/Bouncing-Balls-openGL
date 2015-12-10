@@ -53,8 +53,9 @@ class Physics : public Component {
 
 class WallBounceScript : public Component {
   public:
-    WallBounceScript( GameObject* parent );
+    WallBounceScript( GameObject* parent, double radius );
     void fixedUpdate( float dt );
+    double radius;
 };
 
 #endif
