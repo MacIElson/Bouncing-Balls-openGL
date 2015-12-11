@@ -3,6 +3,7 @@
 #include "ODLGameLoop_private.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <math.h>
 #include <string>
@@ -110,6 +111,37 @@ void Physics::fixedUpdate( float dt ) {
   // printf("%f, %f", parent->x, parent->y);
 };
 
+/**
+ * Begin code to handle wall collisions
+ */
+
+WallBounceScript::WallBounceScript( GameObject* parent, double radius ) :
+radius ( radius ), Component (parent, string( "WallBounceScript" )) {};
+
+void WallBounceScript::fixedUpdate( float dt ) {
+  double x = parent->x;
+  double y = parent->y;
+  Physics* physComp = dynamic_cast<Physics*> (parent->getComponent(string("Physics")).front());
+  double dx = physComp->dx;
+  double dy = physComp->dy;
+
+  if (x+radius >= 1) {
+    dx = -1 * fabs(dx);
+  }
+  if (x-radius <= -1) {
+    dx = fabs(dx);
+  }
+  if (y+radius >= 1) {
+    dy = -1 * fabs(dy);
+  }
+  if (y-radius <= -1) {
+    dy = fabs(dy);
+  }
+
+  physComp->dx = dx;
+  physComp->dy = dy;
+}
+
 
 /**
  * Begin code to handle game loop
@@ -145,7 +177,7 @@ void ODLGameLoop_initGameLoopState() {
 
   odlGameLoopState.timeAccumulatedMs = glutGet(GLUT_ELAPSED_TIME);
 
-  printf("lastLoop:%d lastMeasure:%d time timeAccumulated:%d \n", (int) odlGameLoopState.lastLoopTime, (int) odlGameLoopState.lastMeasurementTime, (int) odlGameLoopState.timeAccumulatedMs);
+  //printf("lastLoop:%d lastMeasure:%d time timeAccumulated:%d \n", (int) odlGameLoopState.lastLoopTime, (int) odlGameLoopState.lastMeasurementTime, (int) odlGameLoopState.timeAccumulatedMs);
 }
 
 void ODLGameLoop_onOpenGLDisplay() {
@@ -154,7 +186,6 @@ void ODLGameLoop_onOpenGLDisplay() {
   double now = glutGet(GLUT_ELAPSED_TIME);
   double dt = now - odlGameLoopState.lastLoopTime;
   //printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
-
   Component::updateAll(dt);
   odlGameLoopState.fpsCount++;
   glutSwapBuffers();
@@ -240,10 +271,13 @@ int main() {
   if (obj.getComponent( "physics" ).front() == &comp) printf( "Test Passed\n" );
   else printf ( "Test Failed" );
 
-  CircleRender circleRender( &obj, .5 );
+  CircleRender circleRender( &obj, .2 );
+  Physics physics(&obj, -.0005, -.001);
+  WallBounceScript wallBounceScript(&obj, .2);
+
+  
+
   circleRender.setColor(1, 0, 0);
-  Physics physics(&obj, -.005, -.005);
 
   ODLGameLoop_initOpenGL();
-
 }

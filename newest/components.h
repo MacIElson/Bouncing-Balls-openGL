@@ -45,22 +45,29 @@ struct color_t {
 
 class CircleRender : public Component {
   private:
-    double radius;
     color_t color;
 
   public:
     CircleRender( GameObject* parent, double radius);
     void setColor(float R, float G, float B);
+    double radius;
     void update( float dt );
 };
 
 class Physics : public Component {
   public:
-    Physics ( GameObject* parent, double dx = 0, double dy = 0, double mass = 1);
+    Physics ( GameObject* parent, double dx = 0, double dy = 0, double mass = 1 );
     void fixedUpdate( float dt );
     double dx;
     double dy;
     double mass;
+};
+
+class WallBounceScript : public Component {
+  public:
+    WallBounceScript( GameObject* parent, double radius );
+    void fixedUpdate( float dt );
+    double radius;
 };
 
 #endif
