@@ -70,4 +70,19 @@ class WallBounceScript : public Component {
     double radius;
 };
 
+class Collider; //Forward declaration, alerts the compiler that collider is coming
+  typedef void ( * triggerFunc ) ( Collider* c1, Collider* c2); //New type called triggerFunc, takes a Collider pointer returns void
+  list<Component*> Component::components;
+  class Collider : public Component{
+    private:
+      double radius;
+      static list<Collider*> allColliders; //List of colliders
+      list<triggerFunc> triggers; //list of trigger functions
+
+    public:
+      void addTrigger(triggerFunc trigger);  //add trigger
+      Collider( GameObject* parent, double radius); //Collider init
+      void fixedUpdate ( float dt ); //Update for a collider
+  };
+
 #endif
