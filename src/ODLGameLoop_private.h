@@ -3,9 +3,7 @@
 
 typedef struct ODLGameLoopStateStruct {
 	int desiredStateUpdatesPerSecond;
-	int desiredStateUpdateDurationMs;
-
-	int gameEntitiesLength;
+	double desiredStateUpdateDurationMs;
 
 	double lastLoopTime;
 	double timeAccumulatedMs;
@@ -14,7 +12,6 @@ typedef struct ODLGameLoopStateStruct {
 	int fpsCount;
 	double lastMeasurementTime;
 
-	double simulatedDelayDurationMs;
 } ODLGameLoopState;
 
 extern ODLGameLoopState odlGameLoopState;
