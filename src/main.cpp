@@ -1,5 +1,6 @@
 #include "components.h"
 #include "components.cpp"
+#include "gameloop.cpp"
 
 void printOnCollide(Collider* c1, Collider* c2){
   printf("collide");

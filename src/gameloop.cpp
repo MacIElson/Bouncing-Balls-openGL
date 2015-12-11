@@ -1,3 +1,9 @@
+#include "gameLoopConstants.h"
+#include "ODLGameLoop_private.h"
+
+
+ODLGameLoopState odlGameLoopState;
+
 void ODLGameLoop_updateMeasurements() {
   double now = glutGet(GLUT_ELAPSED_TIME);
   //printf("now:%d last:%d \n", (int) now, (int) odlGameLoopState.lastMeasurementTime);
@@ -37,7 +43,6 @@ void ODLGameLoop_onOpenGLDisplay() {
   double now = glutGet(GLUT_ELAPSED_TIME);
   double dt = now - odlGameLoopState.lastLoopTime;
   //printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
-
   Component::updateAll(dt);
   odlGameLoopState.fpsCount++;
   glutSwapBuffers();
@@ -76,7 +81,7 @@ void ODLGameLoop_initOpenGL() {
     int windowPosX   = WINDOW_POS_X;      // Windowed mode's top-left corner x
     int windowPosY   = WINDOW_POS_Y;      // Windowed mode's top-left corner y
 
-    char *my_argv[] = { "dummyArgs", NULL };
+    char *my_argv[] = { (char*) "dummyArgs", NULL };
     int   my_argc = 1;
     glutInit(&my_argc, my_argv);
 
