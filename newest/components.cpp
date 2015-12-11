@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <math.h> 
+#include <math.h>
 #include <string>
 #include <GL/gl.h>     // The GL Header File
 #include <GL/glut.h>   // The GL Utility Toolkit (Glut) Header
@@ -29,7 +29,7 @@ list<Component*> GameObject::getComponent( string type ) {
 
 /**
  * Adds a component to a particular GameObject
- */ 
+ */
 void GameObject::addComponent( Component* c) {
   componentList.push_back( c );
 }
@@ -39,10 +39,10 @@ list<Component*> Component::components; // Initialize a list of components withi
 
 Component::Component( GameObject* parent, string type ) : parent ( parent ), type ( type ) {
   Component::components.push_back( this ); //this is essentially C++ for self (python)
-  parent->addComponent( this ); //need the arrow because parent is a pointer, adds the component to the specific game object 
+  parent->addComponent( this ); //need the arrow because parent is a pointer, adds the component to the specific game object
 }; // Similar as an init method: In this case, initilizes the type and parent fields, and adds self to the static components list.
 
-void Component::update( float dt ) {} //will be overrided in a subclass, so we don't need to specify it 
+void Component::update( float dt ) {} //will be overrided in a subclass, so we don't need to specify it
 void Component::fixedUpdate( float dt ) {}
 
 void Component::updateAll( float dt ){
@@ -50,7 +50,7 @@ void Component::updateAll( float dt ){
   for(Component* elem: Component::components){
     elem->update( dt );
   }
-};  // Run all variable updates (eg renderAll) 
+};  // Run all variable updates (eg renderAll)
 
 void Component::fixedUpdateAll( float dt ){
  //printf("fixedUpdatedt:%f \n", (float) dt);
@@ -61,10 +61,18 @@ void Component::fixedUpdateAll( float dt ){
 
 /**
  * Begin code to handle CircleRender
- */ 
+ */
 
 CircleRender::CircleRender( GameObject* parent, double radius ) :
-radius ( radius ), Component(parent, string("CircleRender")) {}
+radius ( radius ), Component(parent, string("CircleRender")) {
+  setColor(0, 0, 1);
+}
+
+void CircleRender::setColor(float R, float G, float B) {
+  color.R = R;
+  color.G = G;
+  color.B = B;
+}
 
 void CircleRender::update( float dt ) {
   //printf("floatingUpdatedt:%f \n", dt);
@@ -74,11 +82,11 @@ void CircleRender::update( float dt ) {
 
   glMatrixMode(GL_MODELVIEW);    // To operate on the model-view matrix
   glLoadIdentity();              // Reset model-view matrix
-  
+
   glTranslatef(ballX, ballY, 0.0f);  // Translate to (xPos, yPos)
   // Use triangular segments to form a circle
   glBegin(GL_TRIANGLE_FAN);
-     glColor3f(0.0f, 0.0f, 1.0f);  // Blue
+     glColor3f(color.R, color.G, color.B);
      glVertex2f(0.0f, 0.0f);       // Center of circle
      int numSegments = 100;
      GLfloat angle;
@@ -105,7 +113,7 @@ void Physics::fixedUpdate( float dt ) {
 
 /**
  * Begin code to handle game loop
- */ 
+ */
 
 void ODLGameLoop_updateMeasurements() {
   double now = glutGet(GLUT_ELAPSED_TIME);
@@ -146,7 +154,7 @@ void ODLGameLoop_onOpenGLDisplay() {
   double now = glutGet(GLUT_ELAPSED_TIME);
   double dt = now - odlGameLoopState.lastLoopTime;
   //printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
-  
+
   Component::updateAll(dt);
   odlGameLoopState.fpsCount++;
   glutSwapBuffers();
@@ -156,7 +164,7 @@ void ODLGameLoop_onOpenGLIdle() {
 
   double now = glutGet(GLUT_ELAPSED_TIME);
   double timeElapsedMs = ((now-odlGameLoopState.lastLoopTime)*1000000)/(CLOCKS_PER_SEC);
-  
+
 
   odlGameLoopState.timeAccumulatedMs += timeElapsedMs;
 
@@ -167,15 +175,15 @@ void ODLGameLoop_onOpenGLIdle() {
       Component::fixedUpdateAll( (float) odlGameLoopState.timeAccumulatedMs);
       //ODLGameLoop_updateState();
       odlGameLoopState.timeAccumulatedMs -= DESIRED_STATE_UPDATE_DURATION_MS;
-  
+
       odlGameLoopState.upsCount++;
       ODLGameLoop_updateMeasurements();
-  
+
       glutPostRedisplay();
-      
+
   }
-  
-  odlGameLoopState.lastLoopTime = now;  
+
+  odlGameLoopState.lastLoopTime = now;
 }
 
 void ODLGameLoop_initOpenGL() {
@@ -218,7 +226,7 @@ void ODLGameLoop_initOpenGL() {
 
 /**
  * End code to handle game loop
- */ 
+ */
 
 // Testing
 int main() {
@@ -233,6 +241,7 @@ int main() {
   else printf ( "Test Failed" );
 
   CircleRender circleRender( &obj, .5 );
+  circleRender.setColor(1, 0, 0);
   Physics physics(&obj, -.005, -.005);
 
   ODLGameLoop_initOpenGL();

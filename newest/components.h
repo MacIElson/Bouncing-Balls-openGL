@@ -3,6 +3,8 @@
 
 #include <list>
 #include <string>
+#include <GL/glut.h>
+
 using namespace std;
 
 //g++ -std=c++11 components.cpp -o components && ./components
@@ -13,7 +15,7 @@ class GameObject {
   private:
   	list<Component*> componentList;
   	void addComponent( Component* c );
-  
+
   public:
   	GameObject( double x, double y );
   	list<Component*> getComponent( string type );	// Returns a list of all components matching the type parameter
@@ -24,7 +26,7 @@ class GameObject {
 class Component {
 	private:
   	static list<Component*> components;
-  
+
   public:
   	Component( GameObject* parent, string type ); // Similar as an init method: In this case, initilizes the type and parent fields, and adds self to the static components list.
   	static void updateAll( float dt );  // Run all variable updates (eg renderAll)
@@ -35,12 +37,20 @@ class Component {
   	GameObject* const parent; // Declare the pointer constant without making the data constant
 };
 
+struct color_t {
+  float R;
+  float G;
+  float B;
+};
+
 class CircleRender : public Component {
   private:
     double radius;
+    color_t color;
 
   public:
     CircleRender( GameObject* parent, double radius);
+    void setColor(float R, float G, float B);
     void update( float dt );
 };
 
