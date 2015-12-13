@@ -1,3 +1,9 @@
+/*-------------------------------------------------------
+
+Implements all of the components used program.
+
+---------------------------------------------------------*/
+
 #include "components.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,9 +18,15 @@
 
 using namespace std;
 
-// GameObject Implementation
+/* This function is a constructor for a GameObject. 
+ * It takes in 2 doubles, x and y, which define the statring 
+ * location of the object.
+ */
 GameObject::GameObject( double x, double y ) : x( x ), y( y ) {}
 
+/* This function takes in a string (type) and returns a list of all
+ * components that have that sting as their type
+ */
 list<Component*> GameObject::getComponent( string type ) {
   list<Component*> res;
   for(Component* elem: componentList) {
@@ -24,21 +36,35 @@ list<Component*> GameObject::getComponent( string type ) {
 }
 
 /**
- * Adds a component to a particular GameObject
+ * This function takes in a component (c) and adds it to a 
+ * GameObject's component list. 
  */
 void GameObject::addComponent( Component* c) {
   componentList.push_back( c );
 }
 
-// Component Implementation
-// list<Component*> Component::components; // Initialize a list of components within the Component namespace
+/* This function is a constructor for a general Component. 
+ * It takes in a GameObject (parent) and a string (type) and saves them as object variables. 
+ * The parent is the GameObject the component belongs to. The type is the type of Component.
+ * It also adds the component constructed component to the static list of components and adds 
+ * the component to its parent gameObject's list of components.
+ */
 
 Component::Component( GameObject* parent, string type ) : parent ( parent ), type ( type ) {
-  Component::components.push_back( this ); //this is essentially C++ for self (python)
-  parent->addComponent( this ); //need the arrow because parent is a pointer, adds the component to the specific game object
-}; // Similar as an init method: In this case, initilizes the type and parent fields, and adds self to the static components list.
+  Component::components.push_back( this ); 
+  parent->addComponent( this );
+};
 
-void Component::update( float dt ) {} //will be overrided in a subclass, so we don't need to specify it
+/* This function takes in a float (dt)
+ * The defualt implementation does nothing
+ * This function is intended to be run at a variable interval (useful for things like rendering)
+ */
+void Component::update( float dt ) {}
+
+/* This function takes in a float (dt)
+ * The defualt implementation does nothing.
+ * This function is intended to be run at a set interval (useful for things like physics)
+ */
 void Component::fixedUpdate( float dt ) {}
 
 void Component::updateAll( float dt ){
