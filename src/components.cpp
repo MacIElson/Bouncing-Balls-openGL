@@ -1,7 +1,4 @@
 #include "components.h"
-#include "gameLoopConstants.h"
-#include "ODLGameLoop_private.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -14,8 +11,6 @@
 #define PI 3.14159265f
 
 using namespace std;
-
-ODLGameLoopState odlGameLoopState;
 
 // GameObject Implementation
 GameObject::GameObject( double x, double y ) : x( x ), y( y ) {}
@@ -61,20 +56,6 @@ void Component::fixedUpdateAll( float dt ){
 }; // Updates on fixed interval (eg physicsUpdateAll)
 
 
-/*class Collider; //Forward declaration, alerts the compiler that collider is coming
-typedef void ( * triggerFunc ) ( Collider* c); //New type called triggerFunc, takes a Collider pointer returns void
-
-class Collider : public Component{
-  private:
-    double radius;
-    static list<Collider*> colliders;
-    list<triggerFunc> triggers;
-
-  public:
-    void addTrigger(triggerFunc);
-    Collider( GameObject* parent, double radius);
-    void fixedUpdate ( float dt );
-*/
 
 list<Collider*> Collider::allColliders;
 
@@ -204,165 +185,4 @@ void WallBounceScript::fixedUpdate( float dt ) {
 
   physComp->dx = dx;
   physComp->dy = dy;
-}
-
-
-/**
- * Begin code to handle game loop
- */
-
-void ODLGameLoop_updateMeasurements() {
-  double now = glutGet(GLUT_ELAPSED_TIME);
-  //printf("now:%d last:%d \n", (int) now, (int) odlGameLoopState.lastMeasurementTime);
-  double timeElapsedMs = ((now-odlGameLoopState.lastMeasurementTime)*1000000)/(CLOCKS_PER_SEC);
-  //printf("timeElapsed:%d \n", (int) timeElapsedMs);
-  if(timeElapsedMs>=500) {
-
-    double ups = (odlGameLoopState.upsCount*1000)/timeElapsedMs;
-    double fps = (odlGameLoopState.fpsCount*1000)/timeElapsedMs;
-    char title[100];
-    printf("On Demand Game Loop. FPS:%d UPS:%d \n", (int) fps, (int)ups);
-    odlGameLoopState.upsCount = 0;
-    odlGameLoopState.fpsCount = 0;
-    odlGameLoopState.lastMeasurementTime = now;
-  }
-}
-
-void ODLGameLoop_initGameLoopState() {
-
-  odlGameLoopState.lastLoopTime = glutGet(GLUT_ELAPSED_TIME);
-  odlGameLoopState.lastMeasurementTime = glutGet(GLUT_ELAPSED_TIME);
-
-  odlGameLoopState.desiredStateUpdatesPerSecond = DESIRED_STATE_UPDATES_PER_SECOND;
-  odlGameLoopState.desiredStateUpdateDurationMs = DESIRED_STATE_UPDATE_DURATION_MS;
-
-  odlGameLoopState.upsCount = 0;
-  odlGameLoopState.fpsCount = 0;
-
-  odlGameLoopState.timeAccumulatedMs = glutGet(GLUT_ELAPSED_TIME);
-
-  //printf("lastLoop:%d lastMeasure:%d time timeAccumulated:%d \n", (int) odlGameLoopState.lastLoopTime, (int) odlGameLoopState.lastMeasurementTime, (int) odlGameLoopState.timeAccumulatedMs);
-}
-
-void ODLGameLoop_onOpenGLDisplay() {
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Screen
-  double now = glutGet(GLUT_ELAPSED_TIME);
-  double dt = now - odlGameLoopState.lastLoopTime;
-  //printf("lastLoop:%f now:%f dt:%f \n", odlGameLoopState.lastLoopTime, now, dt);
-  Component::updateAll(dt);
-  odlGameLoopState.fpsCount++;
-  glutSwapBuffers();
-}
-
-void ODLGameLoop_onOpenGLIdle() {
-
-  double now = glutGet(GLUT_ELAPSED_TIME);
-  double timeElapsedMs = ((now-odlGameLoopState.lastLoopTime)*1000000)/(CLOCKS_PER_SEC);
-
-
-  odlGameLoopState.timeAccumulatedMs += timeElapsedMs;
-
-  while(odlGameLoopState.timeAccumulatedMs >= DESIRED_STATE_UPDATE_DURATION_MS) { //
-  	  //printf("dt:%f \n", odlGameLoopState.timeAccumulatedMs);
-
-
-      Component::fixedUpdateAll( (float) odlGameLoopState.timeAccumulatedMs);
-      //ODLGameLoop_updateState();
-      odlGameLoopState.timeAccumulatedMs -= DESIRED_STATE_UPDATE_DURATION_MS;
-
-      odlGameLoopState.upsCount++;
-      ODLGameLoop_updateMeasurements();
-
-      glutPostRedisplay();
-
-  }
-
-  odlGameLoopState.lastLoopTime = now;
-}
-
-void ODLGameLoop_initOpenGL() {
-    char title[] = "Test Window";  // Windowed mode's title
-    int windowWidth  = VIEW_WIDTH;     // Windowed mode's width
-    int windowHeight = VIEW_HEIGHT;     // Windowed mode's height
-    int windowPosX   = WINDOW_POS_X;      // Windowed mode's top-left corner x
-    int windowPosY   = WINDOW_POS_Y;      // Windowed mode's top-left corner y
-
-    char *my_argv[] = { (char*) "dummyArgs", NULL };
-    int   my_argc = 1;
-    glutInit(&my_argc, my_argv);
-
-    glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
-    glutInitWindowSize(windowWidth, windowHeight);  // Initial window width and height
-    glutInitWindowPosition(windowPosX, windowPosY); // Initial window top-left corner (x, y)
-    glutCreateWindow(title);      // Create window with given title
-
-    glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
-    glClearColor(0.0f, 0.0f, 0.0f, 0.5f);       // Black Background
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClearDepth(1.0f);                 // Depth Buffer Setup
-    glEnable(GL_DEPTH_TEST);              // Enables Depth Testing
-    glDepthFunc(GL_LEQUAL);               // The Type Of Depth Testing To Do
-    glEnable(GL_COLOR_MATERIAL);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-
-    //...
-    glutDisplayFunc(ODLGameLoop_onOpenGLDisplay);
-    glutIdleFunc(ODLGameLoop_onOpenGLIdle);
-    //glutReshapeFunc(reshape);     // Register callback handler for window re-shape
-        //...
-
-    ODLGameLoop_initGameLoopState();
-
-    glutMainLoop();
-}
-
-/**
- * End code to handle game loop
- */
-
-// Testing
-
-void printOnCollide(Collider* c1, Collider* c2){
-  printf("collide");
-}
-
-void freezeTag(Collider* c1, Collider* c2){
-  // Freeze both objects
-  Physics* p1 = (Physics*) c1->parent->getComponent("Physics").front();
-  Physics* p2 = (Physics*) c2->parent->getComponent("Physics").front();
-  p1->dx = 0;
-  p1->dy = 0;
-  p2->dx = 0;
-  p2->dy = 0;
-
-  // Change their color to red
-  CircleRender* cr1 = (CircleRender*) c1->parent->getComponent("CircleRender").front();
-  CircleRender* cr2 = (CircleRender*) c2->parent->getComponent("CircleRender").front();
-  cr1->setColor(1, 0, 0);
-  cr2->setColor(1, 0, 0);
-}
-
-void createBall(double x, double y, double dx, double dy, double radius) {
-  GameObject* obj = new GameObject(x, y);
-  CircleRender* circleRender = new CircleRender(obj, radius);
-  Physics* physics = new Physics(obj, dx, dy);
-  Collider* collider = new Collider(obj, radius);
-  WallBounceScript* wallBounceScript = new WallBounceScript(obj, radius);
-  collider->addTrigger(freezeTag);
-}
-
-int main() {
-  // Set up objects
-  createBall(.5, .5, -.00025, .0005, .1);
-  createBall(.75, .45, .00025, -.00005, .1);
-  createBall(-.75, .45, -.0003, .00015, .1);
-  createBall(0, 0, .0007, -.00005, .1);
-  createBall(.6, -.45, .0003, -.0002, .05);
-  createBall(-.35, -.45, .0003, -.0002, .05);
-  createBall(-.2, -.9, -.0003, -.0002, .2);
-
-  ODLGameLoop_initOpenGL();
 }
