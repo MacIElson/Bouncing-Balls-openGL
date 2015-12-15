@@ -120,27 +120,38 @@ void Collider::addTrigger(triggerFunc trigger) {
   triggers.push_back(trigger);
 }
 
-/* This function takes in a float (dt) representing the time since the last fixedUpdate
- * This function is intended to be run at a set interval and detects if the parent object has collided
- * with another object. If it has collided then it call the trigger functions which will react to the collision
+/* This function calulates the disatnce between 2 GameObjects 
+ */
+float calculateDistance(GameObject* obj1, GameObject* obj2) {
+  return sqrt( pow((obj1->x - obj2->x), 2) + pow((obj1->y - obj2->y), 2) );
+}
+
+/**
+ * This function, invoked every fixedUpdate, detects if this collider is
+ * colliding with any other colliders that are not attached to the same parent
+ * object. If it detects a collision, it will invoke any collision resolution
+ * functions attached to the current collider.
+ *
+ * @param dt The elapsed time since the last fixedUpdate in milliseconds
  */
 void Collider::fixedUpdate(float dt) {
+  // Retrieve a list of all colliders attached to the parent
   list <Component*> parentList =  parent->getComponent("Collider");
+
   Collider* parentCollider;
   for(Collider* otherCollider: Collider::allColliders) {
     for(Component* elem: parentList) {
+      // Skip this loop iteration if the other collider in consideration is
+      // attached to the same object as the current collider
       parentCollider = (Collider*) elem;
-      if ((otherCollider) != parentCollider) {
-       if (
-          sqrt(
-            pow((otherCollider->parent->x - parent->x),2) +
-            pow((otherCollider->parent->y - parent->y),2)
-          ) <
-            (otherCollider->radius + parentCollider->radius)
-        ) for (triggerFunc trigger: triggers) {
-          trigger(parentCollider,otherCollider);
-        }
-      }
+      if (otherCollider == parentCollider) continue;
+
+      // If there is no collision, skip this loop iteration
+      float distance = calculateDistance(otherCollider->parent, parent);
+      if (distance > this->radius + otherCollider->radius) continue;
+
+      // Otherwise, execute any registered collision resolution functions
+      for (triggerFunc trigger: triggers) trigger(this, otherCollider, dt);
     }
   }
 }

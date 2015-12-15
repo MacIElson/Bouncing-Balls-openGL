@@ -22,24 +22,58 @@ void freezeTag(Collider* c1, Collider* c2){
   cr2->setColor(1, 0, 0);
 }
 
-void createBall(double x, double y, double dx, double dy, double radius) {
+void Bounce(Collider* c1, Collider* c2, float dt){
+  // Access the physics components of both balls
+  Physics* p1 = (Physics*) c1->parent->getComponent("Physics").front();
+  Physics* p2 = (Physics*) c2->parent->getComponent("Physics").front();
+
+  // Calculate new velocities
+  float newv1x = (p1->dx * (p1->mass - p2->mass) +
+    (2 * p2->mass * p2->dx)) / (p1->mass + p2->mass);
+  float newv1y = (p1->dy * (p1->mass - p2->mass) +
+    (2 * p2->mass * p2->dy)) / (p1->mass + p2->mass);
+
+  float newv2x = (p2->dx * (p2->mass - p1->mass) +
+    (2 * p1->mass * p1->dx)) / (p1->mass + p2->mass);
+  float newv2y = (p2->dy * (p2->mass - p1->mass) +
+    (2 * p1->mass * p1->dy)) / (p1->mass + p2->mass);
+
+    // Assign velocities
+    p1->dx = newv1x;
+    p1->dy = newv1y;
+
+    p2->dx = newv2x;
+    p2->dy = newv2y;
+
+    // Back the balls off by one step of their new velocities so that collision does not register twice
+    p1->parent->x += newv1x * dt;
+    p1->parent->y += newv1y * dt;
+
+    p2->parent->x += newv2x * dt;
+    p2->parent->y += newv2y * dt;
+}
+
+
+GameObject* createBall(double x, double y, double dx, double dy, double radius) {
+  float mass = PI * pow(radius, 2);
   GameObject* obj = new GameObject(x, y);
   CircleRender* circleRender = new CircleRender(obj, radius);
-  Physics* physics = new Physics(obj, dx, dy);
   Collider* collider = new Collider(obj, radius);
+  Physics* physics = new Physics(obj, dx, dy, mass);
   WallBounceScript* wallBounceScript = new WallBounceScript(obj, radius);
-  collider->addTrigger(freezeTag);
+  collider->addTrigger(Bounce);
+  return obj;
 }
 
 int main() {
   // Set up objects
-  createBall(.5, .5, -.00025, .0005, .1);
-  createBall(.75, .45, .00025, -.00005, .1);
-  createBall(-.75, .45, -.0003, .00015, .1);
-  createBall(0, 0, .0007, -.00005, .1);
+  createBall(.5, .5, -.00045, 0, .1);
+  createBall(-.25, .5, .00045, 0, .2);
+  createBall(-.75, .45, .0001, .0002, .1);
+  createBall(0, 0, .0007, -.00005, .15);
   createBall(.6, -.45, .0003, -.0002, .05);
   createBall(-.35, -.45, .0003, -.0002, .05);
-  createBall(-.2, -.9, -.0003, -.0002, .2);
 
+  // Run loop
   ODLGameLoop_initOpenGL();
 }
