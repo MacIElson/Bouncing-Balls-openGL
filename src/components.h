@@ -70,7 +70,7 @@ class WallBounceScript : public Component {
 };
 
 class Collider; //Forward declaration, alerts the compiler that collider is coming
-  typedef void ( * triggerFunc ) ( Collider* c1, Collider* c2); //New type called triggerFunc, takes a Collider pointer returns void
+  typedef void ( * triggerFunc ) ( Collider* c1, Collider* c2, float dt); //New type called triggerFunc, takes a Collider pointer returns void
   list<Component*> Component::components;
   class Collider : public Component{
     private:
