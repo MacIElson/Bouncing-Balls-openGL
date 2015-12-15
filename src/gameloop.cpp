@@ -4,6 +4,8 @@
 
 ODLGameLoopState odlGameLoopState;
 
+/* This function calucaltes and displays performance information such as ups (updates per second) and fps (frames per second)
+ */
 void ODLGameLoop_updateMeasurements() {
   double now = glutGet(GLUT_ELAPSED_TIME);
   //printf("now:%d last:%d \n", (int) now, (int) odlGameLoopState.lastMeasurementTime);
@@ -21,6 +23,8 @@ void ODLGameLoop_updateMeasurements() {
   }
 }
 
+/* This function initializes variables defining the state of the game loop
+ */
 void ODLGameLoop_initGameLoopState() {
 
   odlGameLoopState.lastLoopTime = glutGet(GLUT_ELAPSED_TIME);
@@ -37,6 +41,8 @@ void ODLGameLoop_initGameLoopState() {
   //printf("lastLoop:%d lastMeasure:%d time timeAccumulated:%d \n", (int) odlGameLoopState.lastLoopTime, (int) odlGameLoopState.lastMeasurementTime, (int) odlGameLoopState.timeAccumulatedMs);
 }
 
+/* This function handles refreshing the display window
+ */
 void ODLGameLoop_onOpenGLDisplay() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear Screen
@@ -48,6 +54,8 @@ void ODLGameLoop_onOpenGLDisplay() {
   glutSwapBuffers();
 }
 
+/* This function controls the speed of fixedUpdates and ensures they run at a fixed interval.
+ */
 void ODLGameLoop_onOpenGLIdle() {
 
   double now = glutGet(GLUT_ELAPSED_TIME);
@@ -74,6 +82,9 @@ void ODLGameLoop_onOpenGLIdle() {
   odlGameLoopState.lastLoopTime = now;
 }
 
+
+/* This function initializes glut and begins the game loop
+ */
 void ODLGameLoop_initOpenGL() {
     char title[] = "Test Window";  // Windowed mode's title
     int windowWidth  = VIEW_WIDTH;     // Windowed mode's width
@@ -101,11 +112,8 @@ void ODLGameLoop_initOpenGL() {
 
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
-    //...
-    glutDisplayFunc(ODLGameLoop_onOpenGLDisplay);
-    glutIdleFunc(ODLGameLoop_onOpenGLIdle);
-    //glutReshapeFunc(reshape);     // Register callback handler for window re-shape
-        //...
+    glutDisplayFunc(ODLGameLoop_onOpenGLDisplay); //set function that displays things
+    glutIdleFunc(ODLGameLoop_onOpenGLIdle); //set function to update state
 
     ODLGameLoop_initGameLoopState();
 
