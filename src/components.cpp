@@ -90,39 +90,40 @@ void Collider::addTrigger(triggerFunc trigger) {
   triggers.push_back(trigger);
 }
 
+float calculateDistance(GameObject* obj1, GameObject* obj2) {
+  return sqrt( pow((obj1->x - obj2->x), 2) + pow((obj1->y - obj2->y), 2) );
+}
+
+/**
+ * This function, invoked every fixedUpdate, detects if this collider is
+ * colliding with any other colliders that are not attached to the same parent
+ * object. If it detects a collision, it will invoke any collision resolution
+ * functions attached to the current collider.
+ *
+ * @param dt The elapsed time since the last fixedUpdate in milliseconds
+ */
 void Collider::fixedUpdate(float dt) {
+  // Retrieve a list of all colliders attached to the parent
   list <Component*> parentList =  parent->getComponent("Collider");
+
   Collider* parentCollider;
   for(Collider* otherCollider: Collider::allColliders) {
     for(Component* elem: parentList) {
+      // Skip this loop iteration if the other collider in consideration is
+      // attached to the same object as the current collider
       parentCollider = (Collider*) elem;
-      if ((otherCollider) != parentCollider) {
-       if (
-          sqrt(
-            pow((otherCollider->parent->x - parent->x),2) +
-            pow((otherCollider->parent->y - parent->y),2)
-          ) <
-            (otherCollider->radius + parentCollider->radius)
-        ) for (triggerFunc trigger: triggers) {
-          trigger(parentCollider,otherCollider,dt);
-        }
-      }
+      if (otherCollider == parentCollider) continue;
+
+      // If there is no collision, skip this loop iteration
+      float distance = calculateDistance(otherCollider->parent, parent);
+      if (distance > this->radius + otherCollider->radius) continue;
+
+      // Otherwise, execute any registered collision resolution functions
+      for (triggerFunc trigger: triggers) trigger(this, otherCollider, dt);
     }
   }
 }
 
-/*fixedUpdate iterate through collider list
-check to to see that it's not this collider (don't collide w/self)
-ask parent object for list of colliders,
-  get component gives you list of all collliders attached to parent
-  check pointers to see if it's Collider* the same
-  if not the same, check to see if radii sum is less than distance
-  between colliders parents x and ys parent->x
-  if there is a collision, iterate through list of triggerfuncs and
-  call every function in that list.
-  what you want to pass is the current collider (this) and reference
-  to the other collider
-*/
 
 /**
  * Begin code to handle CircleRender
@@ -172,9 +173,6 @@ mass ( mass ), dx ( dx ), dy ( dy ), Component (parent, string("Physics")) {};
 void Physics::fixedUpdate( float dt ) {
   parent->x += dx * dt;
   parent->y += dy * dt;
-
-  // printf("Physics update\n");
-  // printf("%f, %f", parent->x, parent->y);
 };
 
 /**
@@ -327,71 +325,58 @@ void ODLGameLoop_initOpenGL() {
 
 // Testing
 
-void printOnCollide(Collider* c1, Collider* c2){
-  printf("collide");
-}
-
-
 void Bounce(Collider* c1, Collider* c2, float dt){
+  // Access the physics components of both balls
   Physics* p1 = (Physics*) c1->parent->getComponent("Physics").front();
   Physics* p2 = (Physics*) c2->parent->getComponent("Physics").front();
-  float newv1x = 
-    (p1->dx * (p1->mass - p2->mass) + (2 * p2->mass * p2->dx))
-    / (p1->mass + p2->mass);
-  float newv1y = (p1->dy * (p1->mass - p2->mass) + (2 * p2->mass * p2->dy)) 
-    / (p1->mass + p2->mass);
 
-  float newv2x = (p2->dx * (p2->mass - p1->mass) + (2 * p1->mass * p1->dx)) 
-    / (p1->mass + p2->mass);
-  float newv2y = (p2->dy * (p2->mass - p1->mass) + (2 * p1->mass * p1->dy)) 
-    / (p1->mass + p2->mass);
+  // Calculate new velocities
+  float newv1x = (p1->dx * (p1->mass - p2->mass) +
+    (2 * p2->mass * p2->dx)) / (p1->mass + p2->mass);
+  float newv1y = (p1->dy * (p1->mass - p2->mass) +
+    (2 * p2->mass * p2->dy)) / (p1->mass + p2->mass);
 
+  float newv2x = (p2->dx * (p2->mass - p1->mass) +
+    (2 * p1->mass * p1->dx)) / (p1->mass + p2->mass);
+  float newv2y = (p2->dy * (p2->mass - p1->mass) +
+    (2 * p1->mass * p1->dy)) / (p1->mass + p2->mass);
+
+    // Assign velocities
     p1->dx = newv1x;
     p1->dy = newv1y;
 
     p2->dx = newv2x;
     p2->dy = newv2y;
 
+    // Back the balls off by one step of their new velocities so that collision does not register twice
+    p1->parent->x += newv1x * dt;
+    p1->parent->y += newv1y * dt;
 
-    p1->parent->x += newv1x*dt;
-    p1->parent->y += newv1y*dt;
-
-    p2->parent->x += newv2x*dt;
-    p2->parent->y += newv2y*dt;
-
-
+    p2->parent->x += newv2x * dt;
+    p2->parent->y += newv2y * dt;
 }
 
 
-GameObject* createBall(double x, double y, double radius) {
-  // float mass = PI * pow(radius, 2);
+GameObject* createBall(double x, double y, double dx, double dy, double radius) {
+  float mass = PI * pow(radius, 2);
   GameObject* obj = new GameObject(x, y);
   CircleRender* circleRender = new CircleRender(obj, radius);
   Collider* collider = new Collider(obj, radius);
+  Physics* physics = new Physics(obj, dx, dy, mass);
   WallBounceScript* wallBounceScript = new WallBounceScript(obj, radius);
   collider->addTrigger(Bounce);
   return obj;
 }
 
-
-
 int main() {
   // Set up objects
-  GameObject* obj1 = createBall(.5, .5, .1);
-  GameObject* obj2 = createBall(-.25, .5, .2);
-  GameObject* obj3 = createBall(-.75, .45, .1);
-  GameObject* obj4 = createBall(0, 0, .15);
-  GameObject* obj5 = createBall(.6, -.45, .05);
-  GameObject* obj6 = createBall(-.35, -.45, .05);
-  // createBall(-.2, -.9, -.0003, -.0002, .2);
+  createBall(.5, .5, -.00045, 0, .1);
+  createBall(-.25, .5, .00045, 0, .2);
+  createBall(-.75, .45, .0001, .0002, .1);
+  createBall(0, 0, .0007, -.00005, .15);
+  createBall(.6, -.45, .0003, -.0002, .05);
+  createBall(-.35, -.45, .0003, -.0002, .05);
 
-  Physics* physics1 = new Physics(obj1, -.00045, 0, PI * pow(.1, 2));
-  Physics* physics2 = new Physics(obj2, .00045, 0, PI * pow(.2, 2));
-  Physics* physics3 = new Physics(obj3, .0001, .0002, PI * pow(.1, 2));
-  Physics* physics4 = new Physics(obj4, .0007, -.00005, PI * pow(.15, 2));
-  Physics* physics5 = new Physics(obj5, .0003, -.0002, PI * pow(.05, 2));
-  Physics* physics6 = new Physics(obj6, .0003, -.0002, PI * pow(.05, 2));
-
-
+  // Run loop
   ODLGameLoop_initOpenGL();
 }
