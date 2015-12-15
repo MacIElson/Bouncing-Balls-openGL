@@ -104,7 +104,7 @@ void Collider::fixedUpdate(float dt) {
           ) <
             (otherCollider->radius + parentCollider->radius)
         ) for (triggerFunc trigger: triggers) {
-          trigger(parentCollider,otherCollider);
+          trigger(parentCollider,otherCollider,dt);
         }
       }
     }
@@ -172,6 +172,8 @@ mass ( mass ), dx ( dx ), dy ( dy ), Component (parent, string("Physics")) {};
 void Physics::fixedUpdate( float dt ) {
   parent->x += dx * dt;
   parent->y += dy * dt;
+
+  // printf("Physics update\n");
   // printf("%f, %f", parent->x, parent->y);
 };
 
@@ -264,7 +266,7 @@ void ODLGameLoop_onOpenGLIdle() {
   odlGameLoopState.timeAccumulatedMs += timeElapsedMs;
 
   while(odlGameLoopState.timeAccumulatedMs >= DESIRED_STATE_UPDATE_DURATION_MS) { //
-  	  //printf("dt:%f \n", odlGameLoopState.timeAccumulatedMs);
+  	  printf("dt:%f \n", odlGameLoopState.timeAccumulatedMs);
 
 
       Component::fixedUpdateAll( (float) odlGameLoopState.timeAccumulatedMs);
@@ -329,40 +331,67 @@ void printOnCollide(Collider* c1, Collider* c2){
   printf("collide");
 }
 
-void freezeTag(Collider* c1, Collider* c2){
-  // Freeze both objects
+
+void Bounce(Collider* c1, Collider* c2, float dt){
   Physics* p1 = (Physics*) c1->parent->getComponent("Physics").front();
   Physics* p2 = (Physics*) c2->parent->getComponent("Physics").front();
-  p1->dx = 0;
-  p1->dy = 0;
-  p2->dx = 0;
-  p2->dy = 0;
+  float newv1x = 
+    (p1->dx * (p1->mass - p2->mass) + (2 * p2->mass * p2->dx))
+    / (p1->mass + p2->mass);
+  float newv1y = (p1->dy * (p1->mass - p2->mass) + (2 * p2->mass * p2->dy)) 
+    / (p1->mass + p2->mass);
 
-  // Change their color to red
-  CircleRender* cr1 = (CircleRender*) c1->parent->getComponent("CircleRender").front();
-  CircleRender* cr2 = (CircleRender*) c2->parent->getComponent("CircleRender").front();
-  cr1->setColor(1, 0, 0);
-  cr2->setColor(1, 0, 0);
+  float newv2x = (p2->dx * (p2->mass - p1->mass) + (2 * p1->mass * p1->dx)) 
+    / (p1->mass + p2->mass);
+  float newv2y = (p2->dy * (p2->mass - p1->mass) + (2 * p1->mass * p1->dy)) 
+    / (p1->mass + p2->mass);
+
+    p1->dx = newv1x;
+    p1->dy = newv1y;
+
+    p2->dx = newv2x;
+    p2->dy = newv2y;
+
+
+    p1->parent->x += newv1x*dt;
+    p1->parent->y += newv1y*dt;
+
+    p2->parent->x += newv2x*dt;
+    p2->parent->y += newv2y*dt;
+
+
 }
 
-void createBall(double x, double y, double dx, double dy, double radius) {
+
+GameObject* createBall(double x, double y, double radius) {
+  // float mass = PI * pow(radius, 2);
   GameObject* obj = new GameObject(x, y);
   CircleRender* circleRender = new CircleRender(obj, radius);
-  Physics* physics = new Physics(obj, dx, dy);
   Collider* collider = new Collider(obj, radius);
   WallBounceScript* wallBounceScript = new WallBounceScript(obj, radius);
-  collider->addTrigger(freezeTag);
+  collider->addTrigger(Bounce);
+  return obj;
 }
+
+
 
 int main() {
   // Set up objects
-  createBall(.5, .5, -.00025, .0005, .1);
-  createBall(.75, .45, .00025, -.00005, .1);
-  createBall(-.75, .45, -.0003, .00015, .1);
-  createBall(0, 0, .0007, -.00005, .1);
-  createBall(.6, -.45, .0003, -.0002, .05);
-  createBall(-.35, -.45, .0003, -.0002, .05);
-  createBall(-.2, -.9, -.0003, -.0002, .2);
+  GameObject* obj1 = createBall(.5, .5, .1);
+  GameObject* obj2 = createBall(-.25, .5, .2);
+  GameObject* obj3 = createBall(-.75, .45, .1);
+  GameObject* obj4 = createBall(0, 0, .15);
+  GameObject* obj5 = createBall(.6, -.45, .05);
+  GameObject* obj6 = createBall(-.35, -.45, .05);
+  // createBall(-.2, -.9, -.0003, -.0002, .2);
+
+  Physics* physics1 = new Physics(obj1, -.00045, 0, PI * pow(.1, 2));
+  Physics* physics2 = new Physics(obj2, .00045, 0, PI * pow(.2, 2));
+  Physics* physics3 = new Physics(obj3, .0001, .0002, PI * pow(.1, 2));
+  Physics* physics4 = new Physics(obj4, .0007, -.00005, PI * pow(.15, 2));
+  Physics* physics5 = new Physics(obj5, .0003, -.0002, PI * pow(.05, 2));
+  Physics* physics6 = new Physics(obj6, .0003, -.0002, PI * pow(.05, 2));
+
 
   ODLGameLoop_initOpenGL();
 }
