@@ -20,7 +20,7 @@ using namespace std;
 
 /*Begin GameObject-------------------------------------------------------*/
 
-/* Theconstructor for a GameObject. 
+/* The constructor for a GameObject. 
  *
  * @param (double x) starting x position of object
  * @param (double y) starting y position of object
