@@ -2,10 +2,20 @@
 #include "components.cpp"
 #include "gameloop.cpp"
 
+/* trigger function that will print to the terminal when called
+ *
+ * @param (Collider* c1) first collider involved in collision
+ * @param (Collider* cc) first second involved in collision
+*/
 void printOnCollide(Collider* c1, Collider* c2){
   printf("collide");
 }
 
+/* trigger function that will freeze the colliding balls and change their colors when called
+ *
+ * @param (Collider* c1) first collider involved in collision
+ * @param (Collider* cc) first second involved in collision
+*/
 void freezeTag(Collider* c1, Collider* c2){
   // Freeze both objects
   Physics* p1 = (Physics*) c1->parent->getComponent("Physics").front();
@@ -22,6 +32,11 @@ void freezeTag(Collider* c1, Collider* c2){
   cr2->setColor(1, 0, 0);
 }
 
+/* trigger function that cause the balls to "bounce" when called
+ *
+ * @param (Collider* c1) first collider involved in collision
+ * @param (Collider* cc) first second involved in collision
+*/
 void Bounce(Collider* c1, Collider* c2, float dt){
   // Access the physics components of both balls
   Physics* p1 = (Physics*) c1->parent->getComponent("Physics").front();
@@ -53,7 +68,14 @@ void Bounce(Collider* c1, Collider* c2, float dt){
     p2->parent->y += newv2y * dt;
 }
 
-
+/* Creates a ball GameObject and associated components
+ *
+ * @param (double x) the starting x position of the ball
+ * @param (double y) the starting y position of the ball
+ * @param (double dx) the starting x speed of the ball
+ * @param (double dy) the starting y speed of the ball
+ * @param (double radius) the starting radius of the ball
+*/
 GameObject* createBall(double x, double y, double dx, double dy, double radius) {
   float mass = PI * pow(radius, 2);
   GameObject* obj = new GameObject(x, y);
@@ -65,6 +87,9 @@ GameObject* createBall(double x, double y, double dx, double dy, double radius) 
   return obj;
 }
 
+/* Creates a number of balls and starts the game loop
+ *
+*/
 int main() {
   // Set up objects
   createBall(.5, .5, -.00045, 0, .1);

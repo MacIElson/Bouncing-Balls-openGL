@@ -1,3 +1,9 @@
+/*-------------------------------------------------------
+
+Implements all of the components used program.
+
+---------------------------------------------------------*/
+
 #include "components.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,9 +18,19 @@
 
 using namespace std;
 
-// GameObject Implementation
+/*Begin GameObject-------------------------------------------------------*/
+
+/* The constructor for a GameObject. 
+ *
+ * @param (double x) starting x position of object
+ * @param (double y) starting y position of object
+ */
 GameObject::GameObject( double x, double y ) : x( x ), y( y ) {}
 
+/* This function returns a list of all components that have the input string as their type
+ *
+ * @param (string type) the desired "type" of component
+ */
 list<Component*> GameObject::getComponent( string type ) {
   list<Component*> res;
   for(Component* elem: componentList) {
@@ -24,63 +40,115 @@ list<Component*> GameObject::getComponent( string type ) {
 }
 
 /**
- * Adds a component to a particular GameObject
+ * This function adds a component to the GameObject's component list.
+ * 
+ * @param (Component* c) the component to add to the Gameobject's list
  */
 void GameObject::addComponent( Component* c) {
   componentList.push_back( c );
 }
 
-// Component Implementation
-// list<Component*> Component::components; // Initialize a list of components within the Component namespace
+/*End GameObject---------------------------------------------------------*/
+
+/*Begin Component-------------------------------------------------------*/
+
+/* This function is a constructor for a general Component. 
+ *  
+ * @param (GameObject* parent) the parent of the new Component
+ * @param (string type) the type of the new component
+ */
 
 Component::Component( GameObject* parent, string type ) : parent ( parent ), type ( type ) {
-  Component::components.push_back( this ); //this is essentially C++ for self (python)
-  parent->addComponent( this ); //need the arrow because parent is a pointer, adds the component to the specific game object
-}; // Similar as an init method: In this case, initilizes the type and parent fields, and adds self to the static components list.
+  Component::components.push_back( this ); 
+  parent->addComponent( this );
+};
 
-void Component::update( float dt ) {} //will be overrided in a subclass, so we don't need to specify it
+
+/* This function is intended to be run at a variable interval (useful for things like rendering)
+ * The defualt implementation does nothing
+ *
+ * @param (float dt) time since the last fixedUpdate in milliseconds
+ */
+void Component::update( float dt ) {}
+
+/* This function is intended to be run at a set interval (useful for things like physics)
+ * The defualt implementation does nothing.
+ *
+ * @param (float dt) time since the last fixedUpdate in milliseconds
+ */
+
 void Component::fixedUpdate( float dt ) {}
 
+/* This function takes in a float (dt) representing the time since the last fixedUpdate
+ * This function is intended to be run at a variable interval (useful for things like rendering)
+ * It runs the update(float dt) funtion for every component
+ */
+
+/* This function runs update() on every component
+ *
+ * @param (float dt) time since the last fixedUpdate in milliseconds
+ */
 void Component::updateAll( float dt ){
+  //printf("floatingUpdateDt:%f \n", (float) dt);
   for(Component* elem: Component::components){
     elem->update( dt );
   }
-};  // Run all variable updates (eg renderAll)
+};
 
+/* This function runs fixedUpdate() on every component
+ *
+ * @param (float dt) time since the last fixedUpdate in milliseconds
+ */
 void Component::fixedUpdateAll( float dt ){
- for(Component* elem: Component::components){
+  //printf("fixedUpdateDt:%f \n", (float) dt);
+  for(Component* elem: Component::components){
     elem->fixedUpdate( dt );
   }
-}; // Updates on fixed interval (eg physicsUpdateAll)
+};
+
+/*End Component-------------------------------------------------------*/
 
 
+/*Begin Collider (extends Component)-------------------------------------------------------*/
 
 list<Collider*> Collider::allColliders;
 
+/* The constructor for a Collider. 
+ *
+ * @param (GameObject* parent) the parent of the new Component
+ * @param (double radius) the collision radius of the object
+ */
 Collider::Collider( GameObject* parent, double radius ) :
   radius( radius ), Component ( parent, "Collider"){
   Collider::allColliders.push_back( this );
   list<triggerFunc> triggers; //this list is all colliders
 };
 
-//addTrigger add trigger function to a list of functions
-
+/* This function adds a trigger function (fuction called when there is a collision) to the collider.
+ *
+ * @param (triggerFunc trigger) a trigger function to be called when the collider detects a collision.
+ */
 void Collider::addTrigger(triggerFunc trigger) {
   triggers.push_back(trigger);
 }
 
+/* This function calulates the disatnce between 2 GameObjects 
+
+ * @param (GameObject* obj1)
+ * @param (GameObject* obj2)
+ */
 float calculateDistance(GameObject* obj1, GameObject* obj2) {
   return sqrt( pow((obj1->x - obj2->x), 2) + pow((obj1->y - obj2->y), 2) );
 }
 
 /**
- * This function, invoked every fixedUpdate, detects if this collider is
- * colliding with any other colliders that are not attached to the same parent
- * object. If it detects a collision, it will invoke any collision resolution
- * functions attached to the current collider.
+ * This function detects if this collider is colliding with any other colliders 
+ * that are not attached to the same parent object. If it detects a collision, 
+ * it will invoke any collision resolution functions attached to the current collider.
  *
- * @param dt The elapsed time since the last fixedUpdate in milliseconds
+ * @param (float dt) The elapsed time since the last fixedUpdate in milliseconds
  */
+
 void Collider::fixedUpdate(float dt) {
   // Retrieve a list of all colliders attached to the parent
   list <Component*> parentList =  parent->getComponent("Collider");
@@ -103,22 +171,38 @@ void Collider::fixedUpdate(float dt) {
   }
 }
 
+/*End Coliider-------------------------------------------------------*/
 
-/**
- * Begin code to handle CircleRender
+
+/*Begin CircleRender-------------------------------------------------------*/
+
+/* The constructor for a CircleRender. 
+ *
+ * @param (GameObject* parent) the parent of the new Component
+ * @param (double radius) the collision radius of the object
  */
-
 CircleRender::CircleRender( GameObject* parent, double radius ) :
 radius ( radius ), Component(parent, string("CircleRender")) {
   setColor(0, 0, 1);
 }
 
+/* This function sets the color the circle should render as.  
+ *
+ * @param (float R) The value of red (0-255)
+ * @param (float G) The value of greem (0-255)
+ * @param (float B) The value of blue (0-255)
+ */
 void CircleRender::setColor(float R, float G, float B) {
   color.R = R;
   color.G = G;
   color.B = B;
 }
 
+/**
+ * This function detects if this collider is colliding with any other colliders 
+ *
+ * @param (float dt) The elapsed time since the last fixedUpdate in milliseconds
+ */
 void CircleRender::update( float dt ) {
   //printf("floatingUpdatedt:%f \n", dt);
   GLfloat ballRadius = (GLfloat) radius;   // Radius of the bouncing ball
@@ -141,26 +225,56 @@ void CircleRender::update( float dt ) {
      }
   glEnd();
 }
+/*End CircleRenderer-------------------------------------------------------*/
 
-/**
- * Physics Component
+/*Begin Physics-------------------------------------------------------*/
+
+/* The constructor for a Physics. 
+ *
+ * @param (GameObject* parent) the parent of the new Component
+ * @param (double dx) the speed in the x direction
+ * @param (double dy) the speed in the y direction
+ * @param (double mass) the mass of the object
  */
-
 Physics::Physics ( GameObject* parent, double dx, double dy, double mass) :
 mass ( mass ), dx ( dx ), dy ( dy ), Component (parent, string("Physics")) {};
 
+/**
+ * This function changes the state of the object at a fixed rate
+ *
+ * @param (float dt) The elapsed time since the last fixedUpdate in milliseconds
+ */
 void Physics::fixedUpdate( float dt ) {
   parent->x += dx * dt;
   parent->y += dy * dt;
 };
 
-/**
- * Begin code to handle wall collisions
+/*End Physics------------------------------------------------------*/
+
+/*Begin WalBounceScript-------------------------------------------------------*/
+
+/* This function is a constructor for a WallBounceScript. 
+ * It takes in a GameObject (parent) and a double (radius). It saves radius as an object variable.
+ * It then runs the parent constructor for Component (to complete setup).
  */
 
+/* The constructor for a WallBounceScript. 
+ *
+ * @param (GameObject* parent) the parent of the new Component
+ * @param (double radius) the radius of the ball
+ */
 WallBounceScript::WallBounceScript( GameObject* parent, double radius ) :
 radius ( radius ), Component (parent, string( "WallBounceScript" )) {};
 
+/* This function takes in a float (dt) representing the time since the last fixedUpdate
+ * This function updates the x and y speeds in the Physics component of the GameObject to make objects bounce off walls.
+ */
+
+/**
+ * This function snsures that GameObjects don't leave the screen
+ *
+ * @param (float dt) The elapsed time since the last fixedUpdate in milliseconds
+ */
 void WallBounceScript::fixedUpdate( float dt ) {
   double x = parent->x;
   double y = parent->y;
@@ -184,3 +298,4 @@ void WallBounceScript::fixedUpdate( float dt ) {
   physComp->dx = dx;
   physComp->dy = dy;
 }
+/*End WalBounceScript-------------------------------------------------------*/
