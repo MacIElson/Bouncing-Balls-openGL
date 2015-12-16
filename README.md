@@ -29,3 +29,6 @@ This behavior checks at each iteration of the `GameLoop` for circles touching th
 
 #### `Collider`
 This behavior detects when two circles are touching or overlapping and modifies their velocites to simulate two physical balls bouncing off of one another.
+
+#### `The Gameloop`
+We use an implementation of an on-demand gameloop. This loop tries to ensure components such as physics are run at a constant rate (default is 60 Hz) at the cost of other updates such as rendering. This makes it so that computers with different graphics and compute cabability will still simulate the game the same. 
