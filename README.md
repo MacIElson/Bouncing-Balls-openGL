@@ -3,6 +3,8 @@
 ## Functionality
 Our code allows a user to create multiple balls of various sizes and starting velocities. As the `GameLoop` runs, these balls will glide around the screen, looking for situations in which a ball touches or overlaps either another ball or the edge of the screen. In such a situation, the ball will bounce back accordingly.
 
+Video Demonstration: https://www.youtube.com/watch?v=vrl5L5qtZg8
+
 ## User Guide
 To install freeglut, use `sudo apt-get freeglut3-dev`.
 To compile, use the `make` command from the root directory.
