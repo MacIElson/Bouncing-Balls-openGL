@@ -1,7 +1,7 @@
 # SoftSysProject
 
 ## Functionality
-blah de blah de blah de blah
+Our code allows a user to create multiple balls of various sizes and starting velocities. As the `GameLoop` runs, these balls will glide around the screen, looking for situations in which a ball touches or overlaps either another ball or the edge of the screen. In such a situation, the ball will bounce back accordingly.
 
 ## User Guide
 To compile, use the `make` command from the root directory.
@@ -16,10 +16,10 @@ Our code follows a component based architecture where a component encapsulates a
 An instance of the `GameObject` class contains only an `x` and `y` coordinate and displays no behavior until assigned as `parent` to a component.
 
 #### `Component`
-blah de blah de blah de blah
+All of the implemented components, `CircleRender`, `Physics`, `WallBounceScript`, and `Collider`, inherit their basic structure from the `Component` class. The `Component` class itself simply initializes generic update functions that are customized and overwritten when a specific component inherits from the `Component` class.
 
 #### `CircleRender`
-This behavior allows a circle to be displayed with its center located at the `x` and `y` coordinates of its `parent`.
+This behavior allows a circle with a specified `radius` to be displayed with its center located at the `x` and `y` coordinates of its `parent`.
 
 #### `Physics`
 This behavior assigns a velocity that will update the `x` and `y` coordinates of its `parent` as the `GameLoop` runs.
