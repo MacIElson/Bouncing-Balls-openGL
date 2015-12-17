@@ -11,7 +11,7 @@ To do both, use `make && bin/BallBouncer`.
 
 ## Architecture Overview
 
-Our code follows a component based architecture where a component encapsulates a single behavior. The components implemented here are `CircleRender`, `Physics`, `WallBounceScript`, and `Collider`. Instances of these components can be initialized and passed a `GameObject* parent` parameter to modify the behavior of that `parent`.
+Our code follows a component based architecture where a component encapsulates a single behavior. The components implemented here are `CircleRender`, `Physics`, `WallBounceScript`, and `Collider`. Instances of these components can be initialized and passed a `GameObject* parent` parameter to modify the behavior of that `parent`. See UML diagram in "SoftSysArchitecture.png".
 
 #### `GameObject`
 An instance of the `GameObject` class contains only an `x` and `y` coordinate and displays no behavior until assigned as `parent` to a component.
